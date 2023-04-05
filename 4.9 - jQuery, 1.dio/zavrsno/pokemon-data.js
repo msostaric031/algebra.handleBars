@@ -13,29 +13,49 @@ $(document).ready(function () {
   });
 
   // https://pokeapi.co/api/v2/pokemon-color/yellow/
-  let request = new XMLHttpRequest();
+  // let request = new XMLHttpRequest();
   // priprema poziva na (pokemon) API
-  request.open("GET", "https://pokeapi.co/api/v2/pokemon-color/yellow/", true);
+  // request.open("GET", "https://pokeapi.co/api/v2/pokemon-color/yellow/", true);
 
-  function popuniPokemone() {
-    const resp = JSON.parse(request.response);
-    //console.log(resp);
+  function popuniPokemone(data) {
+    console.log("invoked popuniPokemone()");
+    // const resp = JSON.parse(data);
     const sourceHTML = document.getElementById("lista-pokemona").innerHTML;
     const template = Handlebars.compile(sourceHTML);
     const ctxData = {
-      pokemon: resp.pokemon_species.slice(0, 20),
+      pokemon: data.pokemon_species.slice(0, 20),
       tableClass: "table",
     };
     const html = template(ctxData);
 
     document.getElementById("div-pokemoni").innerHTML = html;
-    $('[data-bs-toggle="popover"]').popover();
   }
   //   function dodajPruge() {
   //     $("tr:even").css("background-color", "#B8F4F8");
   //     $("th").css("background-color", "darkBlue");
   //     $("th").css("color", "white");
   //   }
+
+  function popuniPokemone1(podaci) {
+    let pokemoni = podaci.pokemon_species.slice(0, 20);
+    console.log(pokemoni.name);
+    for (let i = 0; i < 1; i++) {
+      let onePokemon = pokemoni[i];
+      // console.log(onePokemon.name + "---" + onePokemon.url);
+      dohvatiDetalje(onePokemon);
+    }
+  }
+  function dohvatiDetalje(pokemon) {
+    $.ajax({
+      url: pokemon.url,
+      timeout: 2000,
+    }).done(function (podaci) {
+      const imePokemona = pokemon.name;
+      const habitat = podaci.habitat.name;
+      const growth = podaci.growth_rate.name;
+      console.log("Pokemon " + imePokemona + " " + habitat + " " + growth);
+    });
+  }
 
   function dodajPruge2() {
     $("table tr").removeClass("pruge");
@@ -74,6 +94,7 @@ $(document).ready(function () {
 
   function odradiOstalo() {
     // dodajPruge();
+    $('[data-bs-toggle="popover"]').popover();
     dodajPruge2();
     dodajHeader();
     registrirajMouseEvent();
@@ -81,14 +102,27 @@ $(document).ready(function () {
   }
 
   // funkcija koja ce se pozvati na loadanju stranice
-  request.onload = function () {
-    popuniPokemone();
-    odradiOstalo();
-  };
+  // request.onload = function () {
+  //   popuniPokemone();
+  //   odradiOstalo();
+  // };
   // posalji request na (pokemon) API
-  request.send();
+  // request.send();
 
   $(window).resize(() => {
     console.log(window.innerWidth + " x " + window.innerHeight);
   });
+
+  $.ajax({
+    url: "https://pokeapi.co/api/v2/pokemon-color/yellow/",
+  })
+    .done(function (data) {
+      console.log("Dohvaćeno");
+      // popuniPokemone(data);
+      popuniPokemone1(data);
+      odradiOstalo();
+    })
+    .fail(function (status) {
+      console.log("error" + status);
+    });
 });
